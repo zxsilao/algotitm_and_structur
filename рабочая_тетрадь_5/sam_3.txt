@@ -1,0 +1,92 @@
+Задание 3. Топологическая сортировка и кратчайший путь A → H.
+
+Рисунки: sam_3_graf.png, sam_3_path.png (путь красным).
+
+Дуги (соседи по алфавиту, слева направо на рисунке):
+A: B, C
+B: D, E
+C: E, F
+D: G
+E: G, H
+F: G
+G: —
+H: —
+
+
+1) Топологическая сортировка (DFS)
+
+Код
+
+def topological_sort(graph):
+    visited = set()
+    result = []
+
+    def dfs(v):
+        visited.add(v)
+        for nb in graph.get(v, []):
+            if nb not in visited:
+                dfs(nb)
+        result.append(v)   # вершина после всех потомков
+
+    for v in graph:
+        if v not in visited:
+            dfs(v)
+    return result[::-1]
+
+graph = {
+    'A': ['B', 'C'], 'B': ['D', 'E'], 'C': ['E', 'F'],
+    'D': ['G'], 'E': ['G', 'H'], 'F': ['G'], 'G': [], 'H': [],
+}
+print(topological_sort(graph))
+
+
+Результат
+
+A, C, F, B, E, H, D, G
+
+Проверка: у каждой дуги начало стоит раньше конца.
+A раньше B и C, C раньше E и F, B раньше D и E,
+D раньше G, E раньше G и H, F раньше G.
+
+
+2) Кратчайший путь A → H (BFS, по числу рёбер)
+
+Код
+
+from collections import deque
+
+def shortest_path(graph, start, goal):
+    parent = {start: None}
+    queue = deque([start])
+    while queue:
+        v = queue.popleft()
+        if v == goal:
+            break
+        for nb in graph[v]:
+            if nb not in parent:
+                parent[nb] = v
+                queue.append(nb)
+    path = []
+    cur = goal
+    while cur is not None:
+        path.append(cur)
+        cur = parent[cur]
+    path.reverse()
+    return path
+
+path = shortest_path(graph, 'A', 'H')
+print(path, 'длина', len(path) - 1)
+
+
+Результат
+
+A → B → E → H
+длина 3
+
+Такой же длины ещё один путь: A → C → E → H.
+Короче нельзя: в H входит только дуга из E, а до E от A минимум 2 ребра.
+
+BFS запоминает предшественника при первом посещении.
+Вершина B попадает в очередь раньше C, поэтому E (и затем H)
+получают предшественника со стороны B.
+Оба пути кратчайшие, программа выдаёт A-B-E-H.

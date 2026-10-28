@@ -1,0 +1,86 @@
+Задание 1. Обход графа DFS и BFS от вершины 1.
+
+Рисунок: sam_1_graf.png
+
+Граф неориентированный, 10 вершин.
+Соседи перечислены по возрастанию номера — от этого зависит порядок обхода.
+
+1: 2, 3
+2: 1, 4, 5
+3: 1, 6, 7
+4: 2, 8
+5: 2, 8
+6: 3, 9
+7: 3, 9
+8: 4, 5, 10
+9: 6, 7, 10
+10: 8, 9
+
+
+Код
+
+from collections import deque
+
+graph = {
+    1: [2, 3],
+    2: [1, 4, 5],
+    3: [1, 6, 7],
+    4: [2, 8],
+    5: [2, 8],
+    6: [3, 9],
+    7: [3, 9],
+    8: [4, 5, 10],
+    9: [6, 7, 10],
+    10: [8, 9],
+}
+
+def dfs(graph, vertex, visited=None):
+    if visited is None:
+        visited = []
+    visited.append(vertex)
+    for neighbor in graph[vertex]:
+        if neighbor not in visited:
+            dfs(graph, neighbor, visited)
+    return visited
+
+def bfs(graph, start):
+    visited = {start}
+    queue = deque([start])
+    order = []
+    while queue:
+        vertex = queue.popleft()
+        order.append(vertex)
+        for neighbor in graph[vertex]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+    return order
+
+print('DFS:', dfs(graph, 1))
+print('BFS:', bfs(graph, 1))
+
+
+Результат
+
+DFS: 1, 2, 4, 8, 5, 10, 9, 6, 3, 7
+BFS: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+
+Посещены все 10 вершин.
+
+
+Пояснение
+
+DFS идёт вглубь по первому соседу и возвращается, только когда тупик:
+1 → 2 → 4 → 8, от 8 ещё есть 5 (тупик) и 10,
+от 10 идём в 9 → 6 → 3 → 7.
+Правая ветка (вершина 3) попадает в обход поздно, уже через низ графа.
+
+BFS идёт волнами от 1:
+уровень 0: 1
+уровень 1: 2, 3
+уровень 2: 4, 5, 6, 7
+уровень 3: 8, 9
+уровень 4: 10
+
+Разница: DFS — один длинный путь со возвратами, BFS — вершины в порядке удаления от старта.
+В невзвешенном графе номер уровня BFS и есть длина кратчайшего пути.
